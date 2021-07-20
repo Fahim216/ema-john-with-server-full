@@ -3,15 +3,35 @@ import { useForm } from 'react-hook-form';
 import './Shipment.css';
 import { useContext } from 'react';
 import { UserContext } from '../../App';
+import { getDatabaseCart, processOrder } from '../../utilities/databaseManager';
 
 const Shipment = () => {
   const { register, handleSubmit, watch, errors } = useForm();
   const [loggedInUser, setLoggedInUser] = useContext(UserContext);
-  const onSubmit = data => {
-      console.log('form submitted', data)
+  const onSubmit = orderData => {
+      // console.log('form submitted', data)
+      const savedCart=getDatabaseCart()
+      const orderDetails ={...loggedInUser,products:savedCart, shipment:orderData,orderTime:new Date()};
+    
+      fetch('https://vast-sierra-54883.herokuapp.com/addOrder',{
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(orderDetails)
+      })
+      
+      .then(data => {
+        console.log(data)
+        if(data){
+          processOrder();
+          alert('Your order placed successfully');
+        }
+      })
+   
+   
+   
     };
 
-  console.log(watch("example")); // watch input value by passing the name of it
+  // console.log(watch("example")); // watch input value by passing the name of it
 
   return (
     <form className="ship-form" onSubmit={handleSubmit(onSubmit)}>
